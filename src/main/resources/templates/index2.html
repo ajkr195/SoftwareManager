@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" />
+
+	<script src="https://unpkg.com/htmx.org"></script>
+	<script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.4/browser/nunjucks.min.js"></script>
+	<script>
+		// CORS workaround
+		document.addEventListener("htmx:configRequest", (evt) => {
+			evt.detail.headers = [];
+		});
+
+		// Set the value of the 'search-input' element to the 'search' parameter from the URL if it exists
+		htmx.onLoad(function () {
+			const urlParams = new URLSearchParams(window.location.search);
+			const query = urlParams.get("search");
+			if (query) {
+				document.getElementById("search-input").value = query;
+			}
+		});
+	</script>
+
+</head>
+
+<body>
+	<h1>
+		Softare Manager
+		<span class="htmx-indicator">
+			<img src="img/block.svg" />
+		</span>
+	</h1>
+	<p>
+		Demo <b>load more</b> UX pattern works on htmx with JSON
+		data APIs using Spring Boot Data Rest ! You can find the source code on
+		<a href="https://github.com/ajkr195/?tab=repositories" target="_blank">GitHub</a>. Go take a look!
+	</p>
+	<ul>
+		<li><a th:href="@{/}" href="#">Home</a></li>
+		<li><a th:href="@{/list}" href="/list">List</a></li>
+	</ul>
+
+
+
+
+	<div hx-ext="client-side-templates">
+
+		<button hx-get="http://localhost:8080/softwares" hx-trigger="click" hx-target="#result"
+			nunjucks-template="softwares" hx-indicator=".htmx-indicator">
+			Show List
+		</button>
+
+
+		<template id="softwares">
+			<!-- count -->
+			{% if not prev %}
+			<i> Found {{ page.totalElements }} articles.</i>
+			{% endif %}
+
+			<!-- results -->
+			{% for software in _embedded.softwares %}
+			<div>
+				<hr />
+				<h4>
+					Software ID: {{ software.id }}
+				</h4>
+				<h4>
+					Software Name: {{ software.softwarename }}
+				</h4>
+				<h2>
+					Software provider: {{ software.softwareprovider }}
+				</h2>
+				<h4>
+					Modified by - {{ software.lastModifiedBy }}, Modified on: {{ software.lastModifiedDate
+					| truncate(10, true, "")}}
+				</h4>
+				<p>Created by - {{ software.createdBy }}, Created on: {{ software.createdDate
+					| truncate(10, true, "")}}</p>
+
+<!--				{% if _links.next.href %}-->
+<!--				<h4>-->
+<!--					Next Link: <a href="{{ _links.next.href }}"> {{ _links.next.href }}</a>-->
+<!--				</h4>-->
+<!--				{% endif %}-->
+<!--				{% if _links.prev.href %}-->
+<!--				<h4>-->
+<!--					Previous Link: <a href="{{ _links.prev.href }}"> {{ _links.prev.href }}</a>-->
+<!--				</h4>-->
+<!--				{% endif %}-->
+
+			</div>
+			{% endfor %}
+
+			<!-- load more -->
+			{% if _links.next %}
+			<button hx-get="{{ _links.next.href }}" hx-swap="outerHTML" hx-trigger="click"
+				nunjucks-template="softwares">
+				Load More...
+			</button>
+			{% endif %}
+			
+		</template>
+		<div id="result"></div>
+	</div>
+
+
+	<hr />
+	<footer>
+		<p>Created by <a href="https://github.com/ajkr195/?tab=repositories" target="_blank">Ajay Kumar</a>.</p>
+	</footer>
+</body>
+
+</html>
