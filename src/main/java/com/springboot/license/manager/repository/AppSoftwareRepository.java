@@ -18,8 +18,9 @@ import com.springboot.license.manager.model.AppSoftware;
 @RepositoryRestResource(collectionResourceRel = "softwares", path = "softwares")
 public interface AppSoftwareRepository extends JpaRepository<AppSoftware, Long> {
 
-	//Page<AppSoftware> findBySoftwarename(boolean published, Pageable pageable);
-	//Page<AppSoftware> findBySoftwareproviderContaining(String title, Pageable pageable);
+	@RestResource(path = "softwarenameContaining", rel = "softwarenameContaining")
+	Page<AppSoftware> findBySoftwarenameContainingIgnoreCase(@Param("softwarename") String softwarename, Pageable p);
+	
 	List<AppSoftware> findBySoftwareprovidercontactemailContaining(String title, Sort sort);
 	
 	@RestResource(path = "nameStartsWith", rel = "nameStartsWith")
@@ -28,9 +29,8 @@ public interface AppSoftwareRepository extends JpaRepository<AppSoftware, Long> 
 	@RestResource(path = "findBySoftwarename", rel = "findBySoftwarename")
 	List<AppSoftware> findBySoftwarename(@Param("softwarename") String name, Pageable p);
 	
-	@RestResource(path = "softwarenameContaining", rel = "softwarenameContaining")
-	Page<AppSoftware> findBySoftwarenameContainingIgnoreCase(@Param("softwarename") String softwarename, Pageable p);
 	
-	
+	//Page<AppSoftware> findBySoftwarename(boolean published, Pageable pageable);
+		//Page<AppSoftware> findBySoftwareproviderContaining(String title, Pageable pageable);
 
 }
