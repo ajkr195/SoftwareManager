@@ -48,9 +48,10 @@
 		<input id="search-input" autofocus hx-get="http://localhost:8080/softwares/search/softwarenameContaining"
 			hx-indicator=".htmx-indicator" hx-target="#result"
 			hx-trigger="load delay:100ms, keyup changed delay:500ms, softwarename"
-			hx-on::after-request="const url = new URL(location); url.searchParams.set('softwarename', this.value); history.pushState({}, '', url);"
+			hx-on::after-request="const url = new URL(location); url.searchParams.set('softwarename', this.value); "
 			name="softwarename" nunjucks-template="softwares" placeholder="Search softwares..." type="search" />
 		<template id="softwares">
+<!--			history.pushState({}, '', url);-->
 			<!-- count -->
 			{% if not prev %}
 			<i> Found {{ page.totalElements }} software(s).</i>
