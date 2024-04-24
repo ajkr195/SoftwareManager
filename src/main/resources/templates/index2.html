@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
 	<title>Software Manager</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" />
-
-	<script src="https://unpkg.com/htmx.org"></script>
-	<script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.4/browser/nunjucks.min.js"></script>
+	<!--	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" />-->
+	<!--	https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/light.css-->
+	<link th:href="@{/css/dark.css}" rel="stylesheet">
+	<!--	<link th:href="@{/css/light.css}" rel="stylesheet">-->
+	<!--	<script src="https://unpkg.com/htmx.org"></script>-->
+	<script th:src="@{/js/htmx.min.js}"></script>
+	<!--	<script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>-->
+	<script th:src="@{/js/client-side-templates.js}"></script>
+	<!--	<script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.4/browser/nunjucks.min.js"></script>-->
+	<script th:src="@{/js/nunjucks.min.js}"></script>
 	<script>
 		// CORS workaround
 		document.addEventListener("htmx:configRequest", (evt) => {
@@ -19,13 +24,12 @@
 		// Set the value of the 'search-input' element to the 'search' parameter from the URL if it exists
 		htmx.onLoad(function () {
 			const urlParams = new URLSearchParams(window.location.search);
-			const query = urlParams.get("search");
+			const query = urlParams.get("softwarename");
 			if (query) {
 				document.getElementById("search-input").value = query;
 			}
 		});
 	</script>
-
 </head>
 
 <body>
