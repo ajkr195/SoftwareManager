@@ -5,9 +5,10 @@
 	<title>Software Manager</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
 	<!--	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.css" />-->
 	<!--	https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/light.css-->
-	<link th:href="@{/css/dark.css}" rel="stylesheet">
+	<!--	<link th:href="@{/css/dark.css}" rel="stylesheet">-->
 	<!--	<link th:href="@{/css/light.css}" rel="stylesheet">-->
 	<!--	<script src="https://unpkg.com/htmx.org"></script>-->
 	<script th:src="@{/js/htmx.min.js}"></script>
@@ -15,6 +16,8 @@
 	<script th:src="@{/js/client-side-templates.js}"></script>
 	<!--	<script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.4/browser/nunjucks.min.js"></script>-->
 	<script th:src="@{/js/nunjucks.min.js}"></script>
+	<!--	<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js"></script>-->
+	<script src="https://unpkg.com/mustache@latest"></script>
 	<script>
 		// CORS workaround
 		document.addEventListener("htmx:configRequest", (evt) => {
@@ -29,6 +32,22 @@
 				document.getElementById("search-input").value = query;
 			}
 		});
+	</script>
+	<script>
+
+		htmx.defineExtension('json-enc', {
+			onEvent: function (name, evt) {
+				if (name === "htmx:configRequest") {
+					evt.detail.headers['Content-Type'] = "application/json";
+				}
+			},
+
+			encodeParameters: function (xhr, parameters, elt) {
+				xhr.overrideMimeType('text/json');
+				return (JSON.stringify(parameters));
+			}
+		});
+
 	</script>
 </head>
 
@@ -48,8 +67,28 @@
 		<li><a th:href="@{/}" href="#">Home</a></li>
 		<li><a th:href="@{/list}" href="/list">List</a></li>
 	</ul>
+
+
+
+
+
+	<form id="software-add-form" hx-on::after-request="this.reset()">
+		<input type="text" name="softwarename" placeholder="Software Name">
+		<input type="text" name="softwareprovider" placeholder="Provider">
+		<input type="text" name="softwareprovidercontactemail" placeholder="Contact Email">
+	</form>
+
+	<button hx-post="http://localhost:8080/softwares" hx-ext='json-enc' hx-target="#results-box"
+		hx-include="#software-add-form" hx-trigger="click" nunjucks-template="softwares">
+		Submit
+	</button>
+
+	<div id="results-box"></div>
+<div id="content">Start</div>
+
+
 	<div hx-ext="client-side-templates">
-		<input id="search-input" autofocus hx-get="http://localhost:8080/softwares/search/softwarenameContaining"
+		<input id="search-input" autofocus hx-get="/softwares/search/softwarenameContaining"
 			hx-indicator=".htmx-indicator" hx-target="#result"
 			hx-trigger="load delay:100ms, keyup changed delay:500ms, softwarename"
 			hx-on::after-request="const url = new URL(location); url.searchParams.set('softwarename', this.value); history.pushState({}, '', url);"
@@ -64,9 +103,14 @@
 
 
 			<!-- results -->
+
+			<i> {{ _embedded.softwares._links.appSoftware.href }}</i>
 			{% for software in _embedded.softwares %}
 			<div>
 				<hr />
+
+
+
 				<h4>
 					Software ID: {{ software.id }}
 				</h4>
@@ -80,10 +124,23 @@
 					Modified by - {{ software.lastModifiedBy }}, {{ software.lastModifiedDate
 					| truncate(10, true, "")}}
 				</h4>
-				<!--p>{{ software.lastModifiedBy }}</p-->
 
 
-				<!--p>
+				{% if _links.self.href %}
+				<h2>
+					This software Link: <a href="{{ software._links.appSoftware.href }}">{{
+						software._links.appSoftware.href }}</a>
+				</h2>
+				{% endif %}
+
+
+
+
+
+			<!--p>{{ software.lastModifiedBy }}</p-->
+
+
+			<!--p>
 
 					{% if _links.self.href %}
 				<h2>
@@ -109,61 +166,76 @@
 
 				</p-->
 
-			</div>
-			{% endfor %}
 
-			<!-- load more -->
-
-			{% if _links.first.href %}
-			<button hx-get="{{ _links.first.href }}" hx-target="#result" hx-trigger="click"
-				nunjucks-template="softwares">
-				First Page
-			</button>
-			{% endif %}
-
-			<!--			{% if _links.next %}-->
-			<!--			<button hx-get="{{ _links.next.href }}" hx-swap="outerHTML" hx-trigger="click"-->
-			<!--				nunjucks-template="softwares">-->
-			<!--				Load More...-->
-			<!--			</button>-->
-			<!--			{% endif %}-->
-
-			{% if _links.prev.href %}
-			<button hx-get="{{ _links.prev.href }}" hx-target="#result" hx-trigger="click"
-				nunjucks-template="softwares">
-				Previous Page
-			</button>
-			{% endif %}
-
-			{% if not _links.prev.href %}
-			<button type="button" disabled>
-				Previous Page
-			</button>
-			{% endif %}
-
-			{% if _links.next.href %}
-			<button hx-get="{{ _links.next.href }}" hx-target="#result" hx-trigger="click"
-				nunjucks-template="softwares">
-				Next Page
-			</button>
-			{% endif %}
-
-			{% if not _links.next.href %}
-			<button type="button" disabled>
-				Next Page
-			</button>
-			{% endif %}
-
-			{% if _links.last.href %}
-			<button hx-get="{{ _links.last.href }}" hx-target="#result" hx-trigger="click"
-				nunjucks-template="softwares">
-				Last Page
-			</button>
-			{% endif %}
-
-		</template>
-		<div id="result"></div>
 	</div>
+	{% endfor %}
+
+	<!-- load more -->
+
+	{% if _links.first.href %}
+	<button hx-get="{{ _links.first.href }}" hx-target="#result" hx-trigger="click" nunjucks-template="softwares">
+		First Page
+	</button>
+	{% endif %}
+
+	{% if not _links.first.href %}
+	<button type="button" disabled>
+		First Page
+	</button>
+	{% endif %}
+
+	<!--			{% if _links.next %}-->
+	<!--			<button hx-get="{{ _links.next.href }}" hx-swap="outerHTML" hx-trigger="click"-->
+	<!--				nunjucks-template="softwares">-->
+	<!--				Load More...-->
+	<!--			</button>-->
+	<!--			{% endif %}-->
+
+
+
+	{% if _links.prev.href %}
+	<button hx-get="{{ _links.prev.href }}" hx-target="#result" hx-trigger="click" nunjucks-template="softwares">
+		Previous Page
+	</button>
+	{% endif %}
+
+	{% if not _links.prev.href %}
+	<button type="button" disabled>
+		Previous Page
+	</button>
+	{% endif %}
+
+	{% if _links.next.href %}
+	<button hx-get="{{ _links.next.href }}" hx-target="#result" hx-trigger="click" nunjucks-template="softwares">
+		Next Page
+	</button>
+	{% endif %}
+
+	{% if not _links.next.href %}
+	<button type="button" disabled>
+		Next Page
+	</button>
+	{% endif %}
+
+	{% if _links.last.href %}
+	<button hx-get="{{ _links.last.href }}" hx-target="#result" hx-trigger="click" nunjucks-template="softwares">
+		Last Page
+	</button>
+	{% endif %}
+
+	{% if not _links.last.href %}
+	<button type="button" disabled>
+		Last Page
+	</button>
+	{% endif %}
+
+	</template>
+	<div id="result"></div>
+	</div>
+
+
+
+
 
 
 
@@ -172,5 +244,7 @@
 		<p>Created by <a href="https://github.com/ajkr195/?tab=repositories" target="_blank">Ajay Kumar</a>.</p>
 	</footer>
 </body>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
 
 </html>

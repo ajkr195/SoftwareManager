@@ -17,6 +17,11 @@ public class WebController {
 		return "index2";
 	}
 	
+	@GetMapping({ "/fetchData" })
+	String fetchDataPage() {
+		return "index3";
+	}
+	
 	
 	
 

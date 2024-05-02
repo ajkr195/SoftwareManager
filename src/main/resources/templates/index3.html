@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+<body>
+
+	<input type="text" id="dynaLink" onInput="edValueKeyPress()" />
+	<button id="fetchData"> GetData </button>
+	<div id="results"></div>
+	<div id="demo"></div>
+
+
+
+	<h2>HTML Table</h2>
+
+	<table>
+		<thead>
+			<tr>
+				<th>softwarename</th>
+				<th>softwareprovider</th>
+				<th>softwareprovidercontactemail</th>
+			</tr>
+		</thead>
+		<tbody id="myTBody">
+		</tbody>
+	</table>
+
+	<table>
+		<tbody id="myTBody2">
+		</tbody>
+	</table>
+
+	<div id="someDiv"></div>
+
+	<div id="linksDiv"></div>
+
+	<div id="lblValue"></div>
+
+
+
+
+</body>
+
+
+<script>
+
+	//var generateBtn = document.getElementById('fetchData');
+	//generateBtn.addEventListener('click', myFetcher2);
+	function edValueKeyPress() {
+		var edValue = document.getElementById("dynaLink");
+		var s = edValue.value;
+
+		var lblValue = document.getElementById("lblValue");
+		lblValue.innerText = "The text box contains: " + s;
+
+		//window.open('/softwares/search/softwarenameContaining?softwarename=' + s);
+
+		if (s != '' && s.length >= 2) {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=' + s);
+		} else {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=');
+		}
+	}
+	edValueKeyPress();
+
+	function myFetcher(url) {
+
+
+
+
+		fetch(url)
+			.then(
+				function (response) {
+					if (response.status !== 200) {
+						console.log('Looks like there was a problem. Status Code: ' +
+							response.status);
+						return;
+					}
+					response.json().then(function (data) {
+						//console.log(data);
+						const dataString = JSON.stringify(data);
+						//jsonIterator(data);
+						document.getElementById("demo").innerHTML = dataString;
+
+						let myTBody = ""
+
+
+						for (let d in data._embedded.softwares) {
+							myTBody += `<tr><td>${data._embedded.softwares[d].softwarename}</td>
+							<td>${data._embedded.softwares[d].softwareprovider}</td>
+							<td>${data._embedded.softwares[d].softwareprovidercontactemail}  ${data._embedded.softwares[d].createdBy}</td></tr>`;
+						}
+
+						document.getElementById('myTBody').innerHTML = myTBody;
+
+						let myTBody2 = "";
+						myTBody2 += `<tr>`;
+
+
+						try {
+							myTBody2 += `<td><button class="btn btn-sm btn-primary" onclick="myFetcher('${data._links.first.href}')">First</button></td>`
+						} catch (e) {
+						}
+						try {
+							myTBody2 += `<td><button class="btn btn-sm btn-primary" onclick="myFetcher('${data._links.self.href}')">Self</button></td>`
+						} catch (e) {
+						}
+						try {
+							myTBody2 += `<td><button class="btn btn-sm btn-primary" onclick="myFetcher('${data._links.prev.href}')">Previous</button></td>`
+						} catch (e) {
+						}
+						try {
+							myTBody2 += `<td><button class="btn btn-sm btn-primary" onclick="myFetcher('${data._links.next.href}')">Next</button></td>`
+						} catch (e) {
+						}
+						try {
+							myTBody2 += `<td><button class="btn btn-sm btn-primary" onclick="myFetcher('${data._links.last.href}')">Last</button></td>`
+						} catch (e) {
+						}
+						document.getElementById('myTBody2').innerHTML = myTBody2;
+						//jsonIterator(data);
+
+					});
+				}
+			)
+			.catch(function (err) {
+				console.log('Fetch Error :-S', err);
+			})
+	}
+	//myFetcher();
+
+	function myFetcher2() {
+		fetch('/softwares/search/softwarenameContaining?softwarename=aws')
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				//const element = document.getElementById('results');
+				//if (element) {
+				//element.innerHTML = data._embedded.softwares;
+				//}
+
+				let body = ""
+				for (var i = 0; i < data._embedded.softwares.length; i++) {
+					body += `<tr><td>${data._embedded.softwares[i].id}</td>
+					<td>${data._embedded.softwares[i].softwarename}</td>
+					<td>${data._embedded.softwares[i].softwareprovider}</td>
+					<td>${data._embedded.softwares[i].softwareprovidercontactemail} ${data._embedded.softwares[i].createdby}</td>
+					
+					</tr>`
+				}
+
+				document.getElementById('table_body').innerHTML = body;
+
+				//jsonIterator(data);
+
+
+			})
+			.catch(error => console.error('Error fetching JSON:', error));
+
+
+
+	}
+
+
+	function jsonIterator(obj) {
+		let text = "";
+		for (let key in obj) {
+			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+				jsonIterator(obj[key])
+			} else {
+				//console.log("key : " + key + ">>  Value:" + obj[key]);
+				//text += "key:" + key + " Value:" + obj[key] + "";
+
+			}
+		}
+		//document.getElementById("demo").innerHTML = text;
+		//alert(text);
+	}
+
+
+	function getKeyValueByName(obj, keyName) {
+
+		///alert("I am in...");
+
+		let text = "";
+		for (let key in obj) {
+			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+				jsonIterator(obj[key])
+			} else {
+				if (key === keyName) {
+					console.log("key : " + key + ">>  Value:" + obj[key]);
+					alert(obj[key]);
+					return obj[key];
+				} else {
+					console.log(obj[key]);
+				}
+			}
+		}
+		//document.getElementById("demo").innerHTML = text;
+		//alert(text);
+	}
+
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

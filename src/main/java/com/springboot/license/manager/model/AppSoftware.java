@@ -36,7 +36,7 @@ public class AppSoftware extends Auditable<String> implements Serializable {
 	@Column(name = "softwareprovider", nullable = false)
 	private String softwareprovider;
 
-	@Column(name = "softwareprovidercontactemail", nullable = false, unique = true)
+	@Column(name = "softwareprovidercontactemail", nullable = false) //, unique = true
 	private String softwareprovidercontactemail;
 
 }
