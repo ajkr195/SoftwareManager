@@ -14,6 +14,10 @@
 <body>
 
 	<div class="container">
+		<br />
+		<button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#myModal3">
+			<i class="bi bi-plus"></i>Add Software
+		</button>
 		<div id="wrapper"></div>
 	</div>
 
@@ -45,12 +49,12 @@
 		<div class="modal-dialog modal-dialog-centered modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Edit Info</h5>
+					<h5 class="modal-title">Edit existing Info</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 
 				<div class="modal-header">
-					<h6 class="text-danger">Editing existing info. Are you sure? </h6>
+					<h6 class="text-danger">Are you sure? </h6>
 				</div>
 				<div class="modal-body" id="modalBody2">
 					<p>Modal body text goes here.</p>
@@ -59,6 +63,35 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
 					<a id="updateButton" class="btn btn-sm btn-danger" onClick="putData()">Yes. Update It !</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal" tabindex="-1" id="myModal3">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Add Record</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-header">
+					<h6 class="text-danger">Adding new info. Are you sure? </h6>
+				</div>
+				<div class="modal-body" id="modalBody3">
+					<label>Software Name</label></br><input id="add-softwarename" name="add-softwarename" type="text"
+						value="" /></br>
+					<label>Software Provider</label></br><input id="add-softwareprovider" name="add-softwareprovider"
+						type="text" value="" /></br>
+					<label>Software Contactemail</label></br><input id="add-softwareprovidercontactemail"
+						name="add-softwareprovidercontactemail" type="" value="" /></br>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<a id="updateButton" class="btn btn-sm btn-success" onClick="addDataFunction()">Save</a>
 				</div>
 			</div>
 		</div>
@@ -91,10 +124,10 @@
 				then: data => data._embedded.softwares.map(software => [
 					software.id, software.softwarename, software.softwareprovider, software.softwareprovidercontactemail, gridjs.html(`
 					<button class="mx-3 btn btn-sm btn-warning" onClick="myEditFunction('${software._links.appSoftware.href}', this)">
-						<i class="bi bi-pencil-square"></i> Edit</button>
+						<i class="bi bi-pencil-square"></i></button>
 					
 					<button class="mx-3 btn btn-sm btn-danger" onClick="myFunction('${software._links.appSoftware.href}', this)">
-						<i class="bi bi-trash"></i> Delete</button>
+						<i class="bi bi-trash"></i></button>
 					`)
 				]),
 				total: data => data.page.totalElements
@@ -146,10 +179,12 @@
 
 		function myEditFunction(url, elem) {
 
+			//alert(url);
+
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal2'));
 			var target = document.querySelector("#modalBody2");
 			target.textContent = "";
-			fetch(url)
+			fetch(url, {headers: {'Cache-Control': 'no-cache'}})
 				.then(
 					function (response) {
 						if (response.status !== 200) {
@@ -165,7 +200,7 @@
 								}
 
 								if (key == 'softwarename' || key == 'softwareprovider' || key == 'softwareprovidercontactemail') {
-									htmlFromObj += '<label>' + key + '</label></br><input  name="' + key + '" type="text" value="' + value + '" id=put-' + key + '>' + '</br>';
+									htmlFromObj += '<label>' + key + '</label></br><input  class="form-control" name="' + key + '" type="text" value="' + value + '" id=put-' + key + '>' + '</br>';
 								}
 							});
 							document.getElementById("updateButton").setAttribute('name', data._links.appSoftware + '/update');
@@ -246,6 +281,58 @@
 
 		}
 
+		async function addDataFunction() {
+			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal3'));
+			const softwarename = document.getElementById("add-softwarename").value;
+			const softwareprovider = document.getElementById("add-softwareprovider").value;
+			const softwareprovidercontactemail = document.getElementById("add-softwareprovidercontactemail").value;
+
+			const putData = {
+				softwarename: softwarename,
+				softwareprovider: softwareprovider,
+				softwareprovidercontactemail: softwareprovidercontactemail,
+			};
+
+			try {
+				const res = await fetch(`/softwares/add`, {
+					method: "put",
+					headers: {
+						"Content-Type": "application/json",
+						"x-access-token": "token-value",
+					},
+					body: JSON.stringify(putData),
+				});
+
+				if (!res.ok) {
+					const message = `An error has occured: ${res.status} - ${res.statusText}`;
+					throw new Error(message);
+				}
+
+				const data = await res.json();
+
+				const result = {
+					status: res.status + "-" + res.statusText,
+					headers: {"Content-Type": res.headers.get("Content-Type")},
+					data: data,
+				};
+				grid.forceRender(document.getElementById("wrapper"));
+
+
+				var softwarenamefield = document.getElementById("add-softwarename");
+				var softwareproviderfield = document.getElementById("add-softwareprovider");
+				var softwareprovidercontactemailfield = document.getElementById("add-softwareprovidercontactemail");
+
+				softwarenamefield.value = "";
+				softwareproviderfield.value = "";
+				softwareprovidercontactemailfield.value = "";
+				modal.hide();
+
+				//resultElement.innerHTML = htmlizeResponse(result);
+			} catch (err) {
+				//resultElement.innerHTML = htmlizeResponse(err.message);
+			}
+		}
+
 		async function putData() {
 
 			let resultElement = document.getElementById("putResult");
@@ -286,6 +373,18 @@
 					data: data,
 				};
 				grid.forceRender(document.getElementById("wrapper"));
+
+
+				var softwareidfield = document.getElementById("put-id");
+				var softwarenamefield = document.getElementById("put-softwarename");
+				var softwareproviderfield = document.getElementById("put-softwareprovider");
+				var softwareprovidercontactemailfield = document.getElementById("put-softwareprovidercontactemail");
+
+				softwareidfield.value = "";
+				softwarenamefield.value = "";
+				softwareproviderfield.value = "";
+				softwareprovidercontactemailfield.value = "";
+
 				modal.hide();
 
 				//resultElement.innerHTML = htmlizeResponse(result);

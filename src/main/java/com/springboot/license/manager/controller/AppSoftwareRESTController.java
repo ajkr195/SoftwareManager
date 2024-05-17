@@ -63,5 +63,14 @@ public class AppSoftwareRESTController {
 	      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	    }
 	  }
+	 
+	 @PutMapping("/softwares/add")
+	  public ResponseEntity<AppSoftware> addAppSoftware(@RequestBody AppSoftware appSoftwareObj) {
+	      AppSoftware appSoftware = new AppSoftware();
+	      appSoftware.setSoftwarename(appSoftwareObj.getSoftwarename());
+	      appSoftware.setSoftwareprovider(appSoftwareObj.getSoftwareprovider());
+	      appSoftware.setSoftwareprovidercontactemail(appSoftwareObj.getSoftwareprovidercontactemail());
+	      return new ResponseEntity<>(appSoftwareRepository.save(appSoftware), HttpStatus.OK);
+	  }
 	
 }
