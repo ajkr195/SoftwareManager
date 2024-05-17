@@ -22,8 +22,39 @@ public class WebController {
 		return "index3";
 	}
 	
+	@GetMapping({ "/fetchAPIData" })
+	String fetchAPIDataPage() {
+		return "index4";
+	}
 	
+	@GetMapping({ "/fetchDynamicAPIData" })
+	String fetchDynamicAPIData() {
+		return "index9";
+	}
 	
-
+	@GetMapping({ "/gridjstable" })
+	String gridjstablefetchDynamicAPIData() {
+		return "gridjstable";
+	}
+	
+	@GetMapping({ "/fetchDynamicAPIData2" })
+	String fetchDynamicAPIData2() {
+		return "index9_2";
+	}
+	
+	@GetMapping({ "/fetchDynamicAPIData10" })
+	String fetchDynamicAPIData10() {
+		return "index10";
+	}
+	
+	@GetMapping({ "/fetchDynamicAPIData102" })
+	String fetchDynamicAPIData102() {
+		return "index10_2";
+	}
+	@GetMapping({ "/fetchDynamicAPIData12" })
+	String fetchDynamicAPIData12() {
+		return "index12";
+	}
+	
 
 }

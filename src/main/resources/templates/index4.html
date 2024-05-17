@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+<body>
+	
+	
+	<div id="lblValue"></div>
+	
+	<input type="text" id="dynaLink" onInput="edValueKeyPress()" />
+
+	<div id="app"></div>
+
+	<div id="myTBody2"></div>
+
+
+
+
+
+</body>
+
+
+<script>
+	
+	var root = document.getElementById("app");
+	
+	function edValueKeyPress() {
+		var edValue = document.getElementById("dynaLink");
+		var s = edValue.value;
+
+		var lblValue = document.getElementById("lblValue");
+		lblValue.innerText = "The text box contains: " + s;
+
+		//window.open('/softwares/search/softwarenameContaining?softwarename=' + s);
+
+		if (s != '' && s.length >= 2) {
+			root.innerHTML="";
+			displayTable('/softwares/search/softwarenameContaining?softwarename=' + s);
+		} else {
+			root.innerHTML="";
+			displayTable('/softwares/search/softwarenameContaining?softwarename=');
+		}
+	}
+	
+	
+	edValueKeyPress();
+	
+
+
+	
+	
+	async function displayTable(url) {
+		var mydata = await fetch(url)
+			.then((res) => res.json())
+			.then((json) => (response = json));
+
+		let data = mydata._embedded.softwares.map(function (x) {
+			return {
+				id: x.id,
+				softwarename: x.softwarename,
+				softwareprovider: x.softwareprovider,
+				softwareprovidercontactemail: x.softwareprovidercontactemail,
+				createdBy: x.createdBy,
+				createdDate: x.createdDate,
+				lastModifiedBy: x.lastModifiedBy,
+				lastModifiedDate: x.lastModifiedDate,
+				edit: x._links.appSoftware.href
+			}
+		});
+
+		const table = document.createElement("table");
+		table.setAttribute("id", "myTable");
+		table.classList.add("table", "table-sm", "table-bordered");
+		table.border = "1px solid black;"
+		const tableHeading = Object.keys(data[0]);
+		const tr = document.createElement('tr');
+		root.appendChild(table);
+		table.appendChild(tr);
+		for (let i = 0; i < tableHeading.length; i++) {
+			const th = document.createElement('th');
+			th.innerText = tableHeading[i].toUpperCase();
+			tr.appendChild(th);
+		}
+		for (var i = 0; i < data.length; i++) {
+			let tr2 = document.createElement("tr");
+			table.appendChild(tr2);
+			for (let j = 0; j < tableHeading.length; j++) {
+				let td = document.createElement("td");
+				td.innerText = data[i][tableHeading[j]];
+				tr2.appendChild(td);
+			}
+		}
+
+
+		let myTBody2 = "";
+
+
+		try {
+			myTBody2 += `<button class="btn btn-sm btn-primary" onclick="myFetcher('${mydata._links.first.href}')">First</button>`
+		} catch (e) {
+		}
+		try {
+			myTBody2 += `<button class="btn btn-sm btn-primary" onclick="myFetcher('${mydata._links.self.href}')">Self</button>`
+		} catch (e) {
+		}
+		try {
+			myTBody2 += `<button class="btn btn-sm btn-primary" onclick="myFetcher('${mydata._links.prev.href}')">Previous</button>`
+		} catch (e) {
+		}
+		try {
+			myTBody2 += `<button class="btn btn-sm btn-primary" onclick="myFetcher('${mydata._links.next.href}')">Next</button>`
+		} catch (e) {
+		}
+		try {
+			myTBody2 += `<button class="btn btn-sm btn-primary" onclick="myFetcher('${mydata._links.last.href}')">Last</button>`
+		} catch (e) {
+		}
+		document.getElementById('myTBody2').innerHTML = myTBody2;
+	}
+
+
+
+	
+
+	function jsonIterator(obj) {
+		let text = "";
+
+		var myMap = new Map();
+
+		for (let key in obj) {
+			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+				jsonIterator(obj[key])
+			} else {
+				console.log("key : " + key + ">>  Value:" + obj[key]);
+				//text += "key:" + key + " Value:" + obj[key] + "";
+				return myMap.set(key, obj[key]);
+
+			}
+		}
+		//document.getElementById("demo").innerHTML = text;
+		//alert(text);
+	}
+
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

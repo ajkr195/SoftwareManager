@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+<body>
+
+	<input type="text" id="dynaLink" onInput="edValueKeyPress()" />
+	<button id="fetchData"> GetData </button>
+	<div id="results"></div>
+	<div id="demo"></div>
+
+
+
+	<h2>HTML Table</h2>
+
+	<table>
+		<thead>
+			<tr>
+				<th>softwarename</th>
+				<th>softwareprovider</th>
+				<th>softwareprovidercontactemail</th>
+			</tr>
+		</thead>
+		<tbody id="myTBody">
+		</tbody>
+	</table>
+
+	<table>
+		<tbody id="myTBody2">
+		</tbody>
+	</table>
+
+	<div id="someDiv"></div>
+
+	<div id="linksDiv"></div>
+
+	<div id="lblValue"></div>
+
+	<div id="mytableDiv"></div>
+
+
+
+
+
+</body>
+
+
+<script>
+
+	//var generateBtn = document.getElementById('fetchData');
+	//generateBtn.addEventListener('click', myFetcher2);
+	function edValueKeyPress() {
+		var edValue = document.getElementById("dynaLink");
+		var s = edValue.value;
+
+		var lblValue = document.getElementById("lblValue");
+		lblValue.innerText = "The text box contains: " + s;
+
+		//window.open('/softwares/search/softwarenameContaining?softwarename=' + s);
+
+		if (s != '' && s.length >= 2) {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=' + s);
+		} else {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=');
+		}
+	}
+	edValueKeyPress();
+
+	function myFetcher(url) {
+
+
+
+		fetch(url)
+			.then(
+				function (response) {
+					if (response.status !== 200) {
+						console.log('Looks like there was a problem. Status Code: ' +
+							response.status);
+						return;
+					}
+					response.json().then(function (data) {
+						//console.log(data);
+
+						var mytableDiv = document.getElementById("mytableDiv");
+
+						//renderDataTable(data._embedded.softwares, "mytableDiv")
+
+						let myData = data._embedded.softwares.map(function (x) {
+							return {
+								id: x.id,
+								softwarename: x.softwarename,
+								softwareprovider: x.softwareprovider,
+								softwareprovidercontactemail: x.softwareprovidercontactemail,
+								createdBy: x.createdBy,
+								createdDate: x.createdDate,
+								lastModifiedBy: x.lastModifiedBy,
+								lastModifiedDate: x.lastModifiedDate,
+								_links: x._links
+							}
+						});
+
+
+						renderDataTable(myData);
+
+
+
+					});
+				}
+			)
+			.catch(function (err) {
+				console.log('Fetch Error :-S', err);
+			})
+	}
+
+
+	function renderDataTable(myBooks) {
+		// the json data.
+
+		// Extract value from table header. 
+		// ('Book ID', 'Book Name', 'Category' and 'Price')
+		let col = [];
+		for (let i = 0; i < myBooks.length; i++) {
+			for (let key in myBooks[i]) {
+				if (col.indexOf(key) === -1) {
+					col.push(key);
+				}
+			}
+		}
+
+		// Create table.
+		const table = document.createElement("table");
+
+		// Create table header row using the extracted headers above.
+		let tr = table.insertRow(-1);                   // table row.
+
+		for (let i = 0; i < col.length; i++) {
+			let th = document.createElement("th");      // table header.
+			th.textContent = col[i].toUpperCase();
+			tr.appendChild(th);
+		}
+
+		// add json data to the table as rows.
+		for (let i = 0; i < myBooks.length; i++) {
+
+			tr = table.insertRow(-1);
+
+			for (let j = 0; j < col.length; j++) {
+				let tabCell = tr.insertCell(-1);
+
+
+
+				for (let key in myBooks[i]) {
+					if (myBooks[i].hasOwnProperty(key) && (typeof myBooks[i][key] === "object")) {
+						//alert(myBooks[i][key]);
+						//build(myBooks[i]);
+
+						Object.keys(myBooks[i][key]).forEach(e => console.log(e + ' = ' + myBooks[i][e]));
+
+					}
+				}
+
+
+
+				tabCell.textContent = myBooks[i][col[j]];
+
+
+			}
+		}
+
+		// Now, add the newly created table with json data, to a container.
+		const divShowData = document.getElementById('mytableDiv');
+		divShowData.textContent = "";
+		divShowData.appendChild(table);
+	}
+
+
+	function build(JSONObject) {
+		/**get all keys***/
+		var keys = Object.keys(JSONObject);
+		/**get all subkeys***/
+		/**loop sub keys to build HTML***/
+		for (var i = 0, td; i < keys.length; i++) {
+			td = document.createElement('td');
+			td.appendChild(document.createTextNode(keys[i]));
+		}
+	};
+
+
+
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

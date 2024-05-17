@@ -124,7 +124,6 @@
 						} catch (e) {
 						}
 						document.getElementById('myTBody2').innerHTML = myTBody2;
-						jsonIterator(data);
 
 					});
 				}
@@ -135,85 +134,12 @@
 	}
 	//myFetcher();
 
-	function myFetcher2() {
-		fetch('/softwares/search/softwarenameContaining?softwarename=aws')
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				//const element = document.getElementById('results');
-				//if (element) {
-				//element.innerHTML = data._embedded.softwares;
-				//}
-
-				let body = ""
-				for (var i = 0; i < data._embedded.softwares.length; i++) {
-					body += `<tr><td>${data._embedded.softwares[i].id}</td>
-					<td>${data._embedded.softwares[i].softwarename}</td>
-					<td>${data._embedded.softwares[i].softwareprovider}</td>
-					<td>${data._embedded.softwares[i].softwareprovidercontactemail} ${data._embedded.softwares[i].createdby}</td>
-					
-					</tr>`
-				}
-
-				document.getElementById('table_body').innerHTML = body;
-
-				jsonIterator(data);
-
-
-			})
-			.catch(error => console.error('Error fetching JSON:', error));
-
-
-
-	}
-
-
-	function jsonIterator(obj) {
-		let text = "";
-		for (let key in obj) {
-			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-				jsonIterator(obj[key])
-			} else {
-				console.log("key : " + key + ">>  Value:" + obj[key]);
-				//text += "key:" + key + " Value:" + obj[key] + "";
-
-			}
-		}
-		//document.getElementById("demo").innerHTML = text;
-		//alert(text);
-	}
-
-
-	function getKeyValueByName(obj, keyName) {
-
-		///alert("I am in...");
-
-		let text = "";
-		for (let key in obj) {
-			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
-				jsonIterator(obj[key])
-			} else {
-				if (key === keyName) {
-					console.log("key : " + key + ">>  Value:" + obj[key]);
-					alert(obj[key]);
-					return obj[key];
-				} else {
-					console.log(obj[key]);
-				}
-			}
-		}
-		//document.getElementById("demo").innerHTML = text;
-		//alert(text);
-	}
-
+	
 
 </script>
 
 <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/json-to-table.js}"></script>
 
 
 </html>

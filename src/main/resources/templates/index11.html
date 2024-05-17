@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+
+
+<body>
+	<h2>Dynamic HTML Table from Any Nested JSON API's response.</h2>
+	<button id="foo">Build table</button>
+	<div id="output" class="d-flex flex-col"></div>
+	<div id="keyvalueofobject" class="d-flex flex-col"></div>
+</body>
+
+<script>
+
+	var theURL = '/softwares/search/softwarenameContaining?softwarename=';
+
+	const button = document.getElementById('foo');
+	const outputElement = document.getElementById("output");
+	const keyvalueofobject = document.getElementById("keyvalueofobject");
+	
+	
+	button.onclick = function () {
+		outputElement.innerHTML = "";
+		fetchData(theURL);
+	};
+
+	//const button = document.querySelector('#foo');
+	//button.addEventListener('click', fetchData, false);
+
+	function fetchData(thURL) {
+		button.textContent = 'Loading...';
+		button.disabled = true;
+
+		
+		setTimeout(() => {
+			fetch(thURL)
+				.then(response => response.json())
+				.then(data => {
+					//console.log(data);
+					renderJSONToTable(data._embedded.softwares, outputElement);
+					renderObject2(data._links, keyvalueofobject);
+				})
+				.catch(error => console.error(error));
+		}, 10);
+
+	}
+
+	function renderJSONToTable(data, parentElement) {
+		data.forEach(obj => {
+			const column = document.createElement("div");
+			column.classList.add("flex-fill", "me-2", "p-2", "border");
+			renderObject(obj, column);
+			parentElement.appendChild(column);
+		});
+
+		button.remove();
+	}
+
+	function renderObject(obj, parentElement) {
+		for (const key in obj) {
+			const keyValue = document.createElement("div");
+			if (typeof obj[key] === "object") {
+				keyValue.textContent = `${key}:`;
+				const nestedObj = document.createElement("div");
+				renderObject(obj[key], nestedObj);
+				keyValue.appendChild(nestedObj);
+			} else {
+				keyValue.textContent = `${key}: ${obj[key]}`;
+			}
+			parentElement.appendChild(keyValue);
+		}
+	}
+
+	function renderObject2(obj, parentElement) {
+		for (const key in obj) {
+			const keyValue = document.createElement("div");
+			const nestedObj = document.createElement("button");
+			if (typeof obj[key] === "object" && obj[key] != "self") {
+				keyValue.textContent = `${key}:`;
+
+
+
+
+
+				renderObject2(obj[key], nestedObj);
+				keyValue.appendChild(nestedObj);
+			} else {
+				var linkText = document.createTextNode(`${key}`);
+				nestedObj.appendChild(linkText);
+				//nestedObj.innerHTML = `${key}`;
+				//nestedObj.title = "my title text";
+				//nestedObj.href = `${obj[key]}`;
+				nestedObj.onclick = function () {
+					alert('here be dragons');
+					outputElement.innerHTML = "";
+					keyvalueofobject.innerHTML = "";
+					fetchData(`${obj[key]}`);
+					return false;
+				};
+				keyValue.appendChild(nestedObj);
+			}
+			parentElement.appendChild(keyValue);
+		}
+	}
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

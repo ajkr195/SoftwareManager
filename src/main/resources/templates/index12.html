@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+	<!--	<script th:src="@{/js/json-to-table.js}"></script>-->
+</head>
+
+<body>
+
+	<div id="jsonTabledd"></div>
+
+	<div id="tableContainer1"></div>
+
+	<div id="keyvalueofobject" class="d-flex flex-col"></div>
+
+	<div id="output" class="d-flex flex-col"></div>
+
+
+	<div class="modal" tabindex="-1" id="myModal">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Modal title</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" id="modalBody">
+					<p>Modal body text goes here.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+
+
+<script>
+
+
+	function myFetcher(url) {
+
+
+		fetch(url)
+			.then(
+				function (response) {
+					if (response.status !== 200) {
+						console.log('Looks like there was a problem. Status Code: ' +
+							response.status);
+						return;
+					}
+					response.json().then(function (data) {
+
+						let myData = data._embedded.softwares.map(function (x) {
+							return {
+								id: x.id,
+								softwarename: x.softwarename,
+								softwareprovider: x.softwareprovider,
+								softwareprovidercontactemail: x.softwareprovidercontactemail,
+								createdBy: x.createdBy,
+								createdDate: x.createdDate,
+								lastModifiedBy: x.lastModifiedBy,
+								lastModifiedDate: x.lastModifiedDate,
+								details: x._links
+							}
+						});
+
+						var myhtml = jsonToHTMLTable(myData, 'horizontal');
+						var target = document.querySelector("#tableContainer1");
+						target.insertAdjacentHTML('beforeend', myhtml);
+
+						renderObject2(data._links, keyvalueofobject);
+
+					});
+				}
+			)
+			.catch(function (err) {
+				console.log('Fetch Error :-S', err);
+			})
+	}
+	myFetcher("/softwares/search/softwarenameContaining?softwarename=");
+
+
+
+</script>
+
+<script>
+
+	function jsonToHTMLTable(data, headingType) {
+		var th = new Array();
+		if (headingType == "horizontal") {
+			for (var i = 0; i < data.length; i++) {
+				for (var j = 0; j < Object.keys(data[i]).length; j++) {
+					if (th.indexOf(Object.keys(data[i])[j]) == -1)
+						th.push(Object.keys(data[i])[j]);
+				}
+			}
+			var tr = "<tr>";
+
+			for (var k = 0; k < th.length; k++) {
+				tr += "<th>" + th[k].toLowerCase().replace(/\b\w/g, s => s.toUpperCase()) + "</th>";
+			}
+			tr += "</tr>";
+
+			var rows = "";
+			for (var l = 0; l < data.length; l++) {
+				rows += "<tr>";
+				for (var m = 0; m < th.length; m++) {
+					if (typeof data[l][th[m]] == 'undefined') {
+						rows += "<td></td>";
+					}
+					else if (typeof data[l][th[m]] === "object" && data[l][th[m]].self) {
+						rows += "<td><button class=\"btn btn-sm btn-success\" onclick=\"myFunction('" + data[l][th[m]].self.href + "')\">" + data[l][th[m]].self.href + "/view" + "</button><br>";
+						rows += "<button class=\"btn btn-sm btn-success\">" + data[l][th[m]].self.href + "/edit" + "</button><br>";
+						rows += "<button class=\"btn btn-sm btn-success\">" + data[l][th[m]].self.href + "/delete" + "</button></td>";
+					}
+					else {
+						rows += "<td>" + data[l][th[m]] + "</td>";
+					}
+				}
+				rows += "</tr>";
+			}
+
+			var horizontal_table = "<table class=\"table table-striped table-bordered table-hover\">" + tr + rows + "</table>";
+			return horizontal_table;
+		}
+		else if (headingType == "vertical") {
+			for (var i = 0; i < data.length; i++) {
+				for (var j = 0; j < Object.keys(data[i]).length; j++) {
+					if (th.indexOf(Object.keys(data[i])[j]) == -1)
+						th.push(Object.keys(data[i])[j]);
+				}
+			}
+
+			var rows = "";
+			for (var k = 0; k < th.length; k++) {
+				rows += "<tr>";
+				for (var l = 0; l < data.length; l++) {
+					if (l == 0)
+						rows += "<th>" + th[k].toLowerCase().replace(/\b\w/g, s => s.toUpperCase()) + "</th>";
+					if (typeof data[l][th[k]] == 'undefined') {
+						rows += "<td></td>";
+					}
+					else if (typeof data[l][th[k]] === "object" && data[l][th[k]].self) {
+						rows += "<td><button class=\"btn btn-sm btn-success\" onclick=\"myFunction('" + data[l][th[k]].self.href + "')\" >" + data[l][th[k]].self.href + "/view" + "</button><br>";
+						rows += "<button class=\"btn btn-sm btn-success\">" + data[l][th[k]].self.href + "/edit" + "</button><br>";
+						rows += "<button class=\"btn btn-sm btn-success\">" + data[l][th[k]].self.href + "/delete" + "</button></td>";
+					}
+					else
+						rows += "<td>" + data[l][th[k]] + "</td>";
+				}
+				rows += "</tr>";
+			}
+
+			var vertical_table = "<table class=\"table table-striped table-bordered table-hover\">" + rows + "</table>";
+			return vertical_table;
+		}
+	}
+
+
+	function myFunction(url) {
+		//alert(url);
+		let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal')); // Returns a Bootstrap modal instance
+
+		var target = document.querySelector("#modalBody");
+
+		target.textContent = "";
+
+		fetch(url)
+			.then(
+				function (response) {
+					if (response.status !== 200) {
+						console.log('Looks like there was a problem. Status Code: ' +
+							response.status);
+						return;
+					}
+					response.json().then(function (data) {
+
+						//console.log(data);
+
+						var mymodalhtml = "";
+						if (typeof data === "object") {
+							mymodalhtml += "<p>" + data.id + "</p>";
+							mymodalhtml += "<p>" + data.softwarename + "</p>";
+							mymodalhtml += "<p>" + data.softwareprovider + "</p>";
+							mymodalhtml += "<p>" + data.softwareprovidercontactemail + "</p>";
+							mymodalhtml += "<p>" + data.createdBy + "</p>";
+							mymodalhtml += "<p>" + data.createdDate + "</p>";
+							mymodalhtml += "<p>" + data.lastModifiedBy + "</p>";
+							mymodalhtml += "<p>" + data.lastModifiedDate + "</p>";
+							if (typeof data._links === "object") {
+								mymodalhtml += "<p>" + data._links.self.href + "</p>";
+								mymodalhtml += "<p>" + data._links.appSoftware.href + "</p>";
+							}
+						}
+
+
+
+
+						var myhtml = jsonToHTMLTable(data, 'horizontal');
+
+						target.insertAdjacentHTML('beforeend', myObjIterFunction(data));
+
+					});
+				}
+			)
+			.catch(function (err) {
+				console.log('Fetch Error :-S', err);
+			})
+
+
+
+
+		modal.show();
+
+
+	}
+
+	function myObjIterFunction(data) {
+
+		var htmlFromObj = "";
+
+		for (const [key, value] of Object.entries(data)) {
+
+
+			if (typeof value === "object") {
+				htmlFromObj += "<b>Links </b>: ";
+				//alert("Hoo haa");
+				myObjIterFunction(value);
+				for (const [k, v] of Object.entries(value)) {
+					htmlFromObj += "<br>" + k + " -- " + v.href;
+				}
+
+			} else {
+				htmlFromObj += "<b>" + key + "</b> : " + value + "<br>";
+			}
+
+
+		}
+		return htmlFromObj;
+
+	}
+
+	function renderObject2(obj, parentElement) {
+		const tableContainer1 = document.getElementById("tableContainer1");
+		for (const key in obj) {
+			const keyValue = document.createElement("div");
+			const nestedObj = document.createElement("button");
+			if (typeof obj[key] === "object") {
+				keyValue.textContent = `${key}:`;
+
+				renderObject2(obj[key], nestedObj);
+				keyValue.appendChild(nestedObj);
+			} else {
+				var linkText = document.createTextNode(`${key}`);
+				nestedObj.appendChild(linkText);
+				nestedObj.textContent = 'Click me!';
+
+
+				nestedObj.onclick = function () {
+					tableContainer1.textContent = "";
+					keyvalueofobject.textContent = "";
+					myFetcher(`${obj[key]}`);
+					return false;
+				};
+				keyValue.appendChild(nestedObj);
+			}
+			parentElement.appendChild(keyValue);
+		}
+	}
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

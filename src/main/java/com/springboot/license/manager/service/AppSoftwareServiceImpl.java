@@ -20,4 +20,18 @@ public class AppSoftwareServiceImpl implements AppSoftwareService {
 		 return appSoftwareRepository.findAll();
 	}
 
+	@Override
+	public void deleteSoftware(Long id) {
+		// TODO Auto-generated method stub
+		appSoftwareRepository.deleteById(id);
+		
+	}
+
+	@Override
+	public AppSoftware updateSoftware(Long id) {
+		// TODO Auto-generated method stub
+		AppSoftware appSoftware = appSoftwareRepository.findById(id).get();
+		return appSoftwareRepository.save(appSoftware);
+	}
+
 }

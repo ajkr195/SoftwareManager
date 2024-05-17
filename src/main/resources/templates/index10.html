@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+
+
+<body>
+	<h2>Dynamic HTML Table from Any Nested JSON API's response.</h2>
+	<button id="foo">Build table</button>
+	<div id="output" class="d-flex flex-col"></div>
+	<div id="keyvalueofobject" class="d-flex flex-col"></div>
+	<div id="pageInfo" class="d-flex flex-col"></div>
+
+	<div id="featuredItem" class="d-flex flex-col"></div>
+</body>
+
+<script>
+
+	var theURL = '/softwares/search/softwarenameContaining?softwarename=';
+
+	const button = document.getElementById('foo');
+	const outputElement = document.getElementById("output");
+	const keyvalueofobject = document.getElementById("keyvalueofobject");
+	const pageInfo = document.getElementById("pageInfo");
+
+	const thefeaturedItem = document.getElementById("featuredItem");
+
+
+	button.onclick = function () {
+		outputElement.innerHTML = "";
+		fetchData(theURL);
+	};
+
+	//const button = document.querySelector('#foo');
+	//button.addEventListener('click', fetchData, false);
+
+	function fetchData(thURL) {
+		button.textContent = 'Loading...';
+		button.disabled = true;
+
+
+		setTimeout(() => {
+			fetch(thURL)
+				.then(response => response.json())
+				.then(data => {
+					//console.log(data);
+					renderJSONToTable(data._embedded.softwares, outputElement);
+					renderObject2(data._links, keyvalueofobject);
+					//renderObject3(data.page, pageInfo);
+					renderObject4(data.page);
+
+
+				})
+				.catch(error => console.error(error));
+		}, 10);
+
+	}
+
+	function renderJSONToTable(data, parentElement) {
+
+		let myData = data.map(function (x) {
+			return {
+				id: x.id,
+				softwarename: x.softwarename,
+				softwareprovider: x.softwareprovider,
+				softwareprovidercontactemail: x.softwareprovidercontactemail,
+				createdBy: x.createdBy,
+				createdDate: x.createdDate,
+				lastModifiedBy: x.lastModifiedBy,
+				lastModifiedDate: x.lastModifiedDate,
+				_links: x._links
+			}
+		});
+
+		myData.forEach(obj => {
+			const column = document.createElement("div");
+			column.classList.add("flex-fill", "me-2", "p-2", "border");
+			renderObject(obj, column);
+			parentElement.appendChild(column);
+		});
+
+		button.remove();
+	}
+
+	function renderObject(obj, parentElement) {
+		for (const key in obj) {
+			const keyValue = document.createElement("div");
+			if (typeof obj[key] === "object") {
+				keyValue.textContent = `${key}:`;
+				const nestedObj = document.createElement("div");
+				renderObject(obj[key], nestedObj);
+				keyValue.appendChild(nestedObj);
+			} else {
+				keyValue.textContent = `${key}: ${obj[key]}`;
+			}
+			parentElement.appendChild(keyValue);
+		}
+	}
+
+	function renderObject2(obj, parentElement) {
+		for (const key in obj) {
+			const keyValue = document.createElement("div");
+			const nestedObj = document.createElement("button");
+			if (typeof obj[key] === "object") {
+				keyValue.textContent = `${key}:`;
+
+				renderObject2(obj[key], nestedObj);
+				keyValue.appendChild(nestedObj);
+			} else {
+				var linkText = document.createTextNode(`${key}`);
+				nestedObj.appendChild(linkText);
+				nestedObj.onclick = function () {
+					outputElement.innerHTML = "";
+					keyvalueofobject.innerHTML = "";
+					fetchData(`${obj[key]}`);
+					return false;
+				};
+				keyValue.appendChild(nestedObj);
+			}
+			parentElement.appendChild(keyValue);
+		}
+	}
+
+
+	function renderObject3(obj, parentElement) {
+		for (const key in obj) {
+			const keyValue3 = document.createElement("div");
+			const nestedObj = document.createElement("div");
+
+			var linkText = document.createTextNode(`${key}`);
+			nestedObj.appendChild(linkText);
+			keyValue3.appendChild(nestedObj);
+
+			parentElement.appendChild(keyValue3);
+		}
+	}
+
+	function renderObject4(data) {
+
+		const posts = `
+  <div>
+    Showing ${data.size} of total: ${data.totalElements}
+    <p>You have ${data.totalPages} pages, Currently you are on page # ${data.number + 1}<p>
+     
+    
+  </div>
+`;
+
+		document.querySelector('#featuredItem').innerHTML = posts;
+	}
+
+
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

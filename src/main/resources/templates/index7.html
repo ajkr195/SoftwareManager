@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+<body>
+
+	<input type="text" id="dynaLink" onInput="edValueKeyPress()" />
+	<button id="fetchData"> GetData </button>
+	<div id="results"></div>
+	<div id="demo"></div>
+
+
+
+	<h2>HTML Table</h2>
+
+	<table>
+		<thead>
+			<tr>
+				<th>softwarename</th>
+				<th>softwareprovider</th>
+				<th>softwareprovidercontactemail</th>
+			</tr>
+		</thead>
+		<tbody id="myTBody">
+		</tbody>
+	</table>
+
+	<table>
+		<tbody id="myTBody2">
+		</tbody>
+	</table>
+
+	<div id="someDiv"></div>
+
+	<div id="linksDiv"></div>
+
+	<div id="lblValue"></div>
+
+	<div id="mytableDiv"></div>
+
+
+
+
+</body>
+
+
+<script>
+
+	//var generateBtn = document.getElementById('fetchData');
+	//generateBtn.addEventListener('click', myFetcher2);
+	function edValueKeyPress() {
+		var edValue = document.getElementById("dynaLink");
+		var s = edValue.value;
+
+		var lblValue = document.getElementById("lblValue");
+		lblValue.innerText = "The text box contains: " + s;
+
+		//window.open('/softwares/search/softwarenameContaining?softwarename=' + s);
+
+		if (s != '' && s.length >= 2) {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=' + s);
+		} else {
+			myFetcher('/softwares/search/softwarenameContaining?softwarename=');
+		}
+	}
+	edValueKeyPress();
+
+	function myFetcher(url) {
+
+
+
+
+		fetch(url)
+			.then(
+				function (response) {
+					if (response.status !== 200) {
+						console.log('Looks like there was a problem. Status Code: ' +
+							response.status);
+						return;
+					}
+					response.json().then(function (data) {
+						console.log(data);
+
+						var mytableDiv = document.getElementById("mytableDiv");
+
+						JSONToHTMLTable(data._embedded.softwares, "mytableDiv")
+						
+						
+
+
+					});
+				}
+			)
+			.catch(function (err) {
+				console.log('Fetch Error :-S', err);
+			})
+	}
+
+
+	function JSONToHTMLTable(jsonData, elementToBind) {
+
+		//This Code gets all columns for header   and stored in array col
+		var col = [];
+		for (var i = 0; i < jsonData.length; i++) {
+			for (var key in jsonData[i]) {
+				if (col.indexOf(key) === -1) {
+					col.push(key);
+				}
+			}
+		}
+
+		//This Code creates HTML table
+		var table = document.createElement("table");
+
+		//This Code getsrows for header creader above.
+		var tr = table.insertRow(-1);
+
+		for (var i = 0; i < col.length; i++) {
+			var th = document.createElement("th");
+			th.innerHTML = col[i];
+			tr.appendChild(th);
+		}
+
+		//This Code adds data to table as rows
+		for (var i = 0; i < jsonData.length; i++) {
+
+			tr = table.insertRow(-1);
+
+			for (var j = 0; j < col.length; j++) {
+				var tabCell = tr.insertCell(-1);
+				tabCell.textContent = jsonData[i][col[j]];
+			}
+		}
+
+		//This Code gets the all columns for header
+		var divContainer = document.getElementById(elementToBind);
+		divContainer.innerHTML = "";
+		divContainer.appendChild(table);
+	}
+
+
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+
+</html>

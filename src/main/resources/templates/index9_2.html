@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+
+
+
+<body>
+
+	<button id="theButton"> GetData </button>
+	<div id="tableContainer"></div>
+
+	<div id="myModal" class="modal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Modal title</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Modal body text goes here.</p>
+					<div id="modalDiv">
+
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary">Save changes</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+<script>
+	const button = document.querySelector('#theButton');
+	button.addEventListener('click', fetchData, false);
+
+
+
+
+	function fetchData() {
+		button.textContent = 'Loading...';
+		button.disabled = true;
+		const outputElement = document.getElementById("output");
+		setTimeout(() => {
+			fetch('/softwares/search/softwarenameContaining?softwarename=')
+				.then(response => response.json())
+				.then(data => {
+					//console.log(data);
+					// Re-oder the data map
+					let myData = data._embedded.softwares.map(function (x) {
+						return {
+							id: x.id,
+							softwarename: x.softwarename,
+							softwareprovider: x.softwareprovider,
+							softwareprovidercontactemail: x.softwareprovidercontactemail,
+							createdBy: x.createdBy,
+							createdDate: x.createdDate,
+							lastModifiedBy: x.lastModifiedBy,
+							lastModifiedDate: x.lastModifiedDate,
+							_links: x._links
+						}
+					});
+					createTable(myData);
+				})
+				.catch(error => console.error(error));
+		}, 500);
+
+	}
+
+	function createTable(jsonData) {
+
+		let container = document.getElementById("tableContainer");
+		let table = document.createElement("table");
+		table.classList.add('table','table-sm','table-bordered');
+		let cols = Object.keys(jsonData[0]);
+		let thead = document.createElement("thead");
+		let tr = document.createElement("tr");
+		cols.forEach((item) => {
+			let th = document.createElement("th");
+			th.innerText = item;
+			tr.appendChild(th);
+		});
+		thead.appendChild(tr);
+		table.append(tr);
+
+		jsonData.forEach((item) => {
+			let tr = document.createElement("tr");
+			let vals = Object.values(item);
+			vals.forEach((elem) => {
+				let td = document.createElement("td");
+				td.innerText = elem;
+				for (let key in elem) {
+					if (elem.hasOwnProperty(key) && (typeof elem[key] === "object")) {
+						//clear the [object object] string
+						td.innerText = '';
+						let theDiv = document.createElement("div");
+						theDiv.insertAdjacentHTML('beforeend', elem.self.href + " <hr>" + elem.appSoftware.href); // Does not work
+						td.appendChild(theDiv);
+					}
+				}
+
+				tr.appendChild(td);
+
+			});
+			table.appendChild(tr);
+		});
+		container.appendChild(table);
+		button.remove();
+	}
+
+
+	function nestedJsonIterator(obj) {
+		let text = "";
+		for (let key in obj) {
+			if (obj.hasOwnProperty(key) && (typeof obj[key] === "object")) {
+				nestedJsonIterator(obj[key])
+			} else {
+				//console.log("key : " + key + ">>  Value:" + obj[key]);
+				text += "key:" + key + " Value:" + obj[key] + "";
+			}
+		}
+		return text;
+	}
+
+</script>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Software Manager</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+	<!--	<script th:src="@{/js/json-to-table.js}"></script>-->
+	<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}" />
+</head>
+
+<body>
+
+	<div class="container">
+		<div id="wrapper"></div>
+	</div>
+
+	<div class="modal" tabindex="-1" id="myModal">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirmation</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-header">
+					<h6 class="text-danger">It might be irreversible operation. Are you sure? </h6>
+				</div>
+				<div class="modal-body" id="modalBody">
+					<p>Modal body text goes here.</p>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<a id="delButton" class="btn btn-sm btn-danger" onClick="deleteFunction(this)">Yes. Delete !</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<div class="modal" tabindex="-1" id="myModal2">
+		<div class="modal-dialog modal-dialog-centered modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirmation</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-header">
+					<h6 class="text-danger">It might be irreversible operation. Are you sure? </h6>
+				</div>
+				<div class="modal-body" id="modalBody2">
+					<p>Modal body text goes here.</p>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<a id="updateButton" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Yes. Update It !</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+	<script>
+		//http://localhost:8080/softwares/search/softwarenameContaining?softwarename=aws&page=1&size=5
+		//<a href='${software._links.appSoftware.href}'>Edit ${software.softwarename} (${software.id})</a>
+		const grid = new gridjs.Grid({
+			columns: ['Id', 'Software Name', 'Provider', 'Contact Email', 'Link'],
+			resizable: true,
+			sort: true,
+			fixedHeader: true,
+			pagination: {
+				//limit: 5,
+				server: {
+					url: (prev, page, size) => `${prev}&page=${page}&size=${size}`
+				}
+			},
+			search: {
+				server: {
+					url: (prev, keyword) => `${prev}${keyword}`
+				}
+			},
+			server: {
+				url: '/softwares/search/softwarenameContaining?softwarename=',
+				then: data => data._embedded.softwares.map(software => [
+					software.id, software.softwarename, software.softwareprovider, software.softwareprovidercontactemail, gridjs.html(`
+					<button class="mx-3 btn btn-sm btn-warning" onClick="myEditFunction('${software._links.appSoftware.href}', this)">
+						<i class="bi bi-pencil-square"></i> Edit</button>
+					
+					<button class="mx-3 btn btn-sm btn-danger" onClick="myFunction('${software._links.appSoftware.href}', this)">
+						<i class="bi bi-trash"></i> Delete</button>
+					`)
+				]),
+				total: data => data.page.totalElements
+			},
+			style: {
+				table: {
+					border: '3px solid #ccc'
+				},
+				th: {
+					'background-color': 'rgba(0, 0, 0, 0.1)',
+					color: '#000',
+					'border-bottom': '3px solid #ccc',
+					'text-align': 'center'
+				},
+				td: {
+					'text-align': 'center'
+				}
+			}
+		});
+
+		grid.render(document.getElementById("wrapper"));
+
+		function myFunction(url, elem) {
+			//alert(url);
+			//alert(elem.textContent);
+			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
+			var target = document.querySelector("#modalBody");
+			target.textContent = "";
+			fetch(url)
+				.then(
+					function (response) {
+						if (response.status !== 200) {
+							console.log('Error..!! Status Code: ' + response.status);
+							return;
+						}
+						response.json().then(function (data) {
+							target.insertAdjacentHTML('beforeend', myObjIterFunction(data, elem));
+							//target.insertAdjacentHTML('beforeend', myEditObjIterFunction(data));
+
+						});
+					}
+				)
+				.catch(function (err) {
+					console.log('Fetch Error :', err);
+				})
+			modal.show();
+		}
+
+
+		function myEditFunction(url, elem) {
+
+			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal2'));
+			var target = document.querySelector("#modalBody2");
+			target.textContent = "";
+			fetch(url)
+				.then(
+					function (response) {
+						if (response.status !== 200) {
+							console.log('Error..!! Status Code: ' + response.status);
+							return;
+						}
+						response.json().then(function (data) {
+							var htmlFromObj = '';
+							Object.entries(data).forEach(([key, value]) => {
+								if (key == 'softwarename' || key == 'softwareprovider' || key == 'softwareprovidercontactemail') {
+									htmlFromObj += '<label>' + key + '</label></br><input  type="text" value="' + value + '" id="' + key + '">' + '</br>';
+								}
+							});
+							document.getElementById("updateButton").setAttribute('name', data._links.appSoftware + '/update');
+							target.insertAdjacentHTML('beforeend', htmlFromObj);
+							modal.show();
+						});
+					}
+				)
+				.catch(function (err) {
+					console.log('Fetch Error :', err);
+				})
+			modal.show();
+
+		}
+
+
+		function myEditObjIterFunction(formData) {
+			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
+			var target = document.querySelector("#modalBody");
+			var htmlFromObj = '';
+			Object.entries(formData).forEach(([key, value]) => {
+
+				if (key == 'softwarename' || key == 'softwareprovider' || key == 'softwareprovidercontactemail') {
+					htmlFromObj += '<label>' + key + '</label></br><input  type="text" value="' + value + '" id="' + key + '">' + '</br>';
+				}
+			});
+			target.insertAdjacentHTML('beforeend', htmlFromObj);
+			modal.show();
+		}
+
+
+		function myObjIterFunction(data, elem) {
+			var htmlFromObj = "";
+			for (const [key, value] of Object.entries(data)) {
+				if (typeof value === "object") {
+					htmlFromObj += "<b>Links </b>: ";
+					//alert("Hoo haa");
+					myObjIterFunction(value);
+					for (const [k, v] of Object.entries(value)) {
+						htmlFromObj += "<br>" + k + " -- " + v.href;
+						document.getElementById("delButton").setAttribute('name', v.href + '/delete');
+					}
+
+				} else {
+					htmlFromObj += "<b>" + key + "</b> :  " + value + "<br>";
+				}
+			}
+			//document.getElementById("delButton").setAttribute('href', data["_links"].self);
+			return htmlFromObj;
+		}
+
+
+		function deleteFunction(elem) {
+			//alert(elem.getAttribute('name'));
+			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
+			fetch(elem.getAttribute('name'), {
+				method: 'DELETE',
+			})
+				.then(res => {
+					res.text();
+					//alert(res.status);
+					if (res.status !== 200) {
+						console.log('Error..!! Status Code: ' + res.status);
+						return;
+					} else {
+						modal.hide();
+						//document.getElementById("wrapper").textContent="";
+						grid.forceRender(document.getElementById("wrapper"));
+						console.log("Delete Successful !");
+					}
+
+				}); // or res.json()
+			//.then(res => console.log(res));
+
+		}
+
+
+
+	</script>
+
+	<script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+
+</html>
