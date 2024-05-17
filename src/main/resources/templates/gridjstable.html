@@ -81,12 +81,12 @@
 					<h6 class="text-danger">Adding new info. Are you sure? </h6>
 				</div>
 				<div class="modal-body" id="modalBody3">
-					<label>Software Name</label></br><input id="add-softwarename" name="add-softwarename" type="text"
-						value="" /></br>
-					<label>Software Provider</label></br><input id="add-softwareprovider" name="add-softwareprovider"
-						type="text" value="" /></br>
+					<label>Software Name</label></br><input id="add-softwarename" class="form-control add-item"
+						name="add-softwarename" type="text" value="" /></br>
+					<label>Software Provider</label></br><input id="add-softwareprovider" class="form-control add-item"
+						name="add-softwareprovider" type="text" value="" /></br>
 					<label>Software Contactemail</label></br><input id="add-softwareprovidercontactemail"
-						name="add-softwareprovidercontactemail" type="" value="" /></br>
+						class="form-control add-item" name="add-softwareprovidercontactemail" type="" value="" /></br>
 				</div>
 
 				<div class="modal-footer">
@@ -286,6 +286,16 @@
 			const softwarename = document.getElementById("add-softwarename").value;
 			const softwareprovider = document.getElementById("add-softwareprovider").value;
 			const softwareprovidercontactemail = document.getElementById("add-softwareprovidercontactemail").value;
+
+
+			var elements = document.getElementsByClassName("add-item");
+			for (let i = 0; i < elements.length; i++) {
+				console.log(elements[i].value);
+				if (elements[i].value === "") {
+					alert("All inputs are required and must be filled out");
+					return false;
+				}
+			}
 
 			const putData = {
 				softwarename: softwarename,
