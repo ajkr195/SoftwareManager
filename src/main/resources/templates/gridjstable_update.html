@@ -184,7 +184,7 @@
 
 		grid.render(document.getElementById("wrapper"));
 
-		function custFunction(data) {
+		function custFunctionxx(data) {
 			let htmlToSend = ''
 			const names = [];
 			for (let i = 0; i < data.length; i++) {
@@ -192,6 +192,13 @@
 			}
 			return htmlToSend;
 		}
+		
+		function custFunction(data) {
+			//data.map(c => c.name).join("</br>");
+			//data.map(c => c.name + "</br>").join("")
+			return data.map(c => c.name + "</br>").join("");
+		}
+		
 
 		function deleteFunction(url, elem) {
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
