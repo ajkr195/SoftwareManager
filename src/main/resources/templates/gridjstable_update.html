@@ -9,9 +9,40 @@
 	<!--	<script th:src="@{/js/json-to-table.js}"></script>-->
 	<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}" />
+	<style>
+		.modal.show {
+			animation: modalOpen .3s;
+		}
 
-	
+		@keyframes modalOpen {
+			0% {
+				-webkit-transform: scale(1);
+				transform: scale(1);
+			}
 
+			1% {
+				-webkit-transform: scale(.75);
+				transform: scale(.75);
+			}
+
+			45% {
+				-webkit-transform: scale(.99);
+				transform: scale(.99);
+			}
+
+			80% {
+				-webkit-transform: scale(.97);
+				transform: scale(.97);
+			}
+
+			100% {
+				-webkit-transform: scale(1);
+				transform: scale(1);
+			}
+
+
+		}
+	</style>
 </head>
 
 <body>
@@ -24,7 +55,7 @@
 		<div id="wrapper"></div>
 	</div>
 
-	<div class="modal" tabindex="-1" id="myModal">
+	<div class="modal fade" tabindex="-1" id="myModal">
 		<div class="modal-dialog modal-dialog-centered modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -41,7 +72,8 @@
 
 				<div class="modal-footer">
 					<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-					<a id="delButton" class="btn btn-sm btn-danger" onClick="deleteFunction(this)">Yes. Delete !</a>
+					<button id="delButton" class="btn btn-sm btn-danger" onClick="deleteOperation(this)">Yes. Delete
+						!</button>
 				</div>
 			</div>
 		</div>
@@ -104,10 +136,8 @@
 
 	<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 	<script>
-		//http://localhost:8080/softwares/search/softwarenameContaining?softwarename=aws&page=1&size=5
-		//<a href='${software._links.appSoftware.href}'>Edit ${software.softwarename} (${software.id})</a>
 		const grid = new gridjs.Grid({
-			columns: ['Id', 'Software Name', 'Provider', 'Contact Email', 'Link'],
+			columns: ['Id', 'Software Name', 'Provider', 'Contact Email', 'customers', 'Action'],
 			resizable: true,
 			sort: true,
 			fixedHeader: true,
@@ -125,11 +155,12 @@
 			server: {
 				url: '/softwares/search/softwarenameContaining?softwarename=',
 				then: data => data._embedded.softwares.map(software => [
-					software.id, software.softwarename, software.softwareprovider, software.softwareprovidercontactemail, gridjs.html(`
-					<button class="mx-3 btn btn-sm btn-warning" onClick="myEditFunction('${software._links.appSoftware.href}', this)">
+					software.id, software.softwarename, software.softwareprovider, software.softwareprovidercontactemail,
+					gridjs.html(custFunction(software.customers)), gridjs.html(`
+					<button class="mx-3 btn btn-sm btn-warning" onClick="editFunction('${software._links.appSoftware.href}', this)">
 						<i class="bi bi-pencil-square"></i></button>
 					
-					<button class="mx-3 btn btn-sm btn-danger" onClick="myFunction('${software._links.appSoftware.href}', this)">
+					<button class="mx-3 btn btn-sm btn-danger" onClick="deleteFunction('${software._links.appSoftware.href}', this)">
 						<i class="bi bi-trash"></i></button>
 					`)
 				]),
@@ -153,9 +184,16 @@
 
 		grid.render(document.getElementById("wrapper"));
 
-		function myFunction(url, elem) {
-			//alert(url);
-			//alert(elem.textContent);
+		function custFunction(data) {
+			let htmlToSend = ''
+			const names = [];
+			for (let i = 0; i < data.length; i++) {
+				htmlToSend += `${data[i].name}</br>`;
+			}
+			return htmlToSend;
+		}
+
+		function deleteFunction(url, elem) {
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
 			var target = document.querySelector("#modalBody");
 			target.textContent = "";
@@ -180,9 +218,7 @@
 		}
 
 
-		function myEditFunction(url, elem) {
-
-			//alert(url);
+		function editFunction(url, elem) {
 
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal2'));
 			var target = document.querySelector("#modalBody2");
@@ -203,7 +239,7 @@
 								}
 
 								if (key == 'softwarename' || key == 'softwareprovider' || key == 'softwareprovidercontactemail') {
-									htmlFromObj += '<label>' + key + '</label></br><input  class="form-control" name="' + key + '" type="text" value="' + value + '" id=put-' + key + '>' + '</br>';
+									htmlFromObj += '<label>' + key.toUpperCase() + '</label></br><input  class="form-control" name="' + key + '" type="text" value="' + value + '" id=put-' + key + '>' + '</br>';
 								}
 							});
 
@@ -241,48 +277,41 @@
 
 
 		function myObjIterFunction(data, elem) {
+
 			var htmlFromObj = "";
 			for (const [key, value] of Object.entries(data)) {
 				if (typeof value === "object") {
 					htmlFromObj += "<b>Links </b>: ";
-					//alert("Hoo haa");
-					myObjIterFunction(value);
 					for (const [k, v] of Object.entries(value)) {
 						htmlFromObj += "<br>" + k + " -- " + v.href;
-						document.getElementById("delButton").setAttribute('name', v.href + '/delete');
 					}
-
 				} else {
-					htmlFromObj += "<b>" + key + "</b> :  " + value + "<br>";
+					htmlFromObj += "<b>" + titleCase(key) + "</b> :  " + value + "<br>";
 				}
 			}
-			//document.getElementById("delButton").setAttribute('href', data["_links"].self);
+			document.getElementById("delButton").setAttribute('name', data._links.appSoftware.href + '/delete');
 			return htmlFromObj;
 		}
 
 
-		function deleteFunction(elem) {
-			//alert(elem.getAttribute('name'));
+
+		function deleteOperation(elem) {
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
 			fetch(elem.getAttribute('name'), {
 				method: 'DELETE',
 			})
 				.then(res => {
 					res.text();
-					//alert(res.status);
 					if (res.status !== 200) {
-						console.log('Error..!! Status Code: ' + res.status);
+						console.log('Fetch DELETE Error..!! Status Code: ' + res.status);
 						return;
 					} else {
 						modal.hide();
-						//document.getElementById("wrapper").textContent="";
 						grid.forceRender(document.getElementById("wrapper"));
 						console.log("Delete Successful !");
 					}
 
-				}); // or res.json()
-			//.then(res => console.log(res));
-
+				});
 		}
 
 		async function addDataFunction() {
@@ -294,14 +323,14 @@
 
 			var elements = document.getElementsByClassName("add-item");
 			for (let i = 0; i < elements.length; i++) {
-				console.log(elements[i].value);
+				//console.log(elements[i].value);
 				if (elements[i].value === "") {
 					alert("All inputs are required and must be filled out");
 					return false;
 				}
 			}
 
-			const putData = {
+			const addData = {
 				softwarename: softwarename,
 				softwareprovider: softwareprovider,
 				softwareprovidercontactemail: softwareprovidercontactemail,
@@ -309,12 +338,12 @@
 
 			try {
 				const res = await fetch(`/softwares/add`, {
-					method: "put",
+					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
 						"x-access-token": "token-value",
 					},
-					body: JSON.stringify(putData),
+					body: JSON.stringify(addData),
 				});
 
 				if (!res.ok) {
@@ -331,19 +360,14 @@
 				};
 				grid.forceRender(document.getElementById("wrapper"));
 
+				clearDivInputs("myModal3");
 
-				var softwarenamefield = document.getElementById("add-softwarename");
-				var softwareproviderfield = document.getElementById("add-softwareprovider");
-				var softwareprovidercontactemailfield = document.getElementById("add-softwareprovidercontactemail");
-
-				softwarenamefield.value = "";
-				softwareproviderfield.value = "";
-				softwareprovidercontactemailfield.value = "";
 				modal.hide();
 
 				//resultElement.innerHTML = htmlizeResponse(result);
 			} catch (err) {
 				//resultElement.innerHTML = htmlizeResponse(err.message);
+				console.log("Fetch POST Error occurred !");
 			}
 		}
 
@@ -366,7 +390,7 @@
 
 			try {
 				const res = await fetch(`/softwares/${id}/update`, {
-					method: "put",
+					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
 						"x-access-token": "token-value",
@@ -389,33 +413,23 @@
 				grid.forceRender(document.getElementById("wrapper"));
 
 
-				var softwareidfield = document.getElementById("put-id");
-				var softwarenamefield = document.getElementById("put-softwarename");
-				var softwareproviderfield = document.getElementById("put-softwareprovider");
-				var softwareprovidercontactemailfield = document.getElementById("put-softwareprovidercontactemail");
-
-				softwareidfield.value = "";
-				softwarenamefield.value = "";
-				softwareproviderfield.value = "";
-				softwareprovidercontactemailfield.value = "";
-
 				modal.hide();
 
-				//resultElement.innerHTML = htmlizeResponse(result);
 			} catch (err) {
-				//resultElement.innerHTML = htmlizeResponse(err.message);
+				console.log("Fetch PUT Error occurred !");
 			}
 		}
 
-		function htmlizeResponse(res) {
-			return (
-				`<div class="alert alert-secondary mt-2" role="alert"><pre>` +
-				JSON.stringify(res, null, 2) +
-				"</pre></div>"
-			);
+		function clearDivInputs(divId) {
+			var inputElements = document.getElementById(divId).querySelectorAll("input");
+			for (const theInput of inputElements) {
+				theInput.value = "";
+			}
 		}
 
-
+		function titleCase(str) {
+			return str.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+		}
 
 	</script>
 

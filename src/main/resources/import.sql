@@ -19,3 +19,20 @@ INSERT INTO app_software (softwarename, softwareprovider, softwareprovidercontac
 INSERT INTO app_software (softwarename, softwareprovider, softwareprovidercontactemail, created_by, created_date, modified_by, modified_date) VALUES ('PuTTY', 'PuTTY', 'admin@PuTTY.com', 'System', DATE '2015-12-31', 'System', DATE '2023-12-31');
 INSERT INTO app_software (softwarename, softwareprovider, softwareprovidercontactemail, created_by, created_date, modified_by, modified_date) VALUES ('Autodesk AutoCAD', 'Autodesk', 'admin@Autodesk.com', 'System', DATE '2015-12-31', 'System', DATE '2023-12-31');
 INSERT INTO app_software (softwarename, softwareprovider, softwareprovidercontactemail, created_by, created_date, modified_by, modified_date) VALUES ('KeePass', 'KeePass', 'admin@KeePass.com', 'System', DATE '2015-12-31', 'System', DATE '2023-12-31');
+
+INSERT INTO app_customer (id, name) VALUES (1, 'CUSTOMER1');
+INSERT INTO app_customer (id, name) VALUES (2, 'CUSTOMER2');
+INSERT INTO app_customer (id, name) VALUES (3, 'CUSTOMER3');
+INSERT INTO app_customer (id, name) VALUES (4, 'CUSTOMER4');
+INSERT INTO app_customer (id, name) VALUES (5, 'CUSTOMER5');
+
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (1, 1);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (1, 2);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (1, 3);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (1, 4);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (1, 5);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (2, 1);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (2, 2);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (3, 3);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (4, 4);
+INSERT INTO app_software_customer (softwareid, customerid) VALUES (5, 5);

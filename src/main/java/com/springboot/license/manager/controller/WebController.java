@@ -37,6 +37,11 @@ public class WebController {
 		return "gridjstable";
 	}
 	
+	@GetMapping({ "/gridjstable_update" })
+	String gridjstable_updatefetchDynamicAPIData() {
+		return "gridjstable_update";
+	}
+	
 	@GetMapping({ "/fetchDynamicAPIData2" })
 	String fetchDynamicAPIData2() {
 		return "index9_2";
