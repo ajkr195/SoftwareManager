@@ -270,7 +270,8 @@
 
 							target.insertAdjacentHTML('beforeend', htmlFromObj);
 							modal.show();
-							document.getElementById("updateButton").setAttribute('name', data._links.appSoftware + '/update');
+							//document.getElementById("updateButton").setAttribute('name', data._links.appSoftware + '/update');
+							document.getElementById("updateButton").setAttribute('name', data._links.appSoftware);
 						});
 					}
 				)
@@ -417,7 +418,7 @@
 			};
 
 			try {
-				const res = await fetch(`/softwares/${id}/update`, {
+				const res = await fetch(`/softwares/${id}`, { // /update
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
