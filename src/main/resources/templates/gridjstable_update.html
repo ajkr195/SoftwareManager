@@ -184,7 +184,7 @@
 
 		grid.render(document.getElementById("wrapper"));
 
-		function custFunction(data) {
+		function custFunctionxx(data) {
 			let htmlToSend = ''
 			const names = [];
 			for (let i = 0; i < data.length; i++) {
@@ -192,13 +192,13 @@
 			}
 			return htmlToSend;
 		}
-		
-		function custFunctionxx(data) {
+
+		function custFunction(data) {
 			//data.map(c => c.name).join("</br>");
 			//data.map(c => c.name + "</br>").join("")
 			return data.map(c => c.name + "</br>").join("");
 		}
-		
+
 
 		function deleteFunction(url, elem) {
 			let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('myModal'));
@@ -223,6 +223,20 @@
 				})
 			modal.show();
 		}
+
+
+		function myObjIterFunctionzxcc(formData) {
+			Object.entries(formData).forEach(([key, value]) => {
+				console.log("key: " + key + " has value: " + value);
+
+				if (Array.isArray(value)) {
+					console.log("Customers Names: " + value.map(c => c.name).join(" - "));
+				}
+			});
+		}
+
+
+
 
 
 		function editFunction(url, elem) {
@@ -286,14 +300,21 @@
 		function myObjIterFunction(data, elem) {
 
 			var htmlFromObj = "";
-			for (const [key, value] of Object.entries(data)) {
-				if (typeof value === "object") {
-					htmlFromObj += "<b>Links </b>: ";
+			for (const [key, value] of Object.entries(data) ) {
+				if (typeof value === "object" && !Array.isArray(value)) {
+					htmlFromObj += "</br><b>Links </b>: ";
 					for (const [k, v] of Object.entries(value)) {
 						htmlFromObj += "<br>" + k + " -- " + v.href;
 					}
+				}
+				else if (Array.isArray(value)) {
+					htmlFromObj += "<b>" + titleCase(key) + "</b> : </br> " + value.filter(kw => kw.name).map(c => c.name).join("</br>");
 				} else {
-					htmlFromObj += "<b>" + titleCase(key) + "</b> :  " + value + "<br>";
+					if (key !== "_links") {
+						htmlFromObj += "<b>" + titleCase(key) + "</b> :  " + value + "<br>";
+					} else {
+						//console.log("_links encountered: "+ key + " having value as : " + value);
+					}
 				}
 			}
 			document.getElementById("delButton").setAttribute('name', data._links.appSoftware.href + '/delete');
@@ -421,6 +442,7 @@
 
 
 				modal.hide();
+				console.log("Fetch PUT success !");
 
 			} catch (err) {
 				console.log("Fetch PUT Error occurred !");
