@@ -10,6 +10,10 @@
 	<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 	<link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}" />
 	<style>
+		.modal .modal-dialog .modal-content {
+			background-color: #F0F0F0;
+		}
+
 		.modal.show {
 			animation: modalOpen .3s;
 		}
@@ -55,7 +59,7 @@
 		<div id="wrapper"></div>
 	</div>
 
-	<div class="modal fade" tabindex="-1" id="myModal">
+	<div class="modal" tabindex="-1" id="myModal">
 		<div class="modal-dialog modal-dialog-centered modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -300,7 +304,7 @@
 		function myObjIterFunction(data, elem) {
 
 			var htmlFromObj = "";
-			for (const [key, value] of Object.entries(data) ) {
+			for (const [key, value] of Object.entries(data)) {
 				if (typeof value === "object" && !Array.isArray(value)) {
 					htmlFromObj += "</br><b>Links </b>: ";
 					for (const [k, v] of Object.entries(value)) {
@@ -310,11 +314,7 @@
 				else if (Array.isArray(value)) {
 					htmlFromObj += "<b>" + titleCase(key) + "</b> : </br> " + value.filter(kw => kw.name).map(c => c.name).join("</br>");
 				} else {
-					if (key !== "_links") {
-						htmlFromObj += "<b>" + titleCase(key) + "</b> :  " + value + "<br>";
-					} else {
-						//console.log("_links encountered: "+ key + " having value as : " + value);
-					}
+					htmlFromObj += "<b>" + titleCase(key) + "</b> :  " + value + "<br>";
 				}
 			}
 			document.getElementById("delButton").setAttribute('name', data._links.appSoftware.href + '/delete');
