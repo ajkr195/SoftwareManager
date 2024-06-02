@@ -219,6 +219,8 @@
 							target.insertAdjacentHTML('beforeend', myObjIterFunction(data, elem));
 							//target.insertAdjacentHTML('beforeend', myEditObjIterFunction(data));
 
+							//transform(data);
+							
 						});
 					}
 				)
@@ -227,6 +229,41 @@
 				})
 			modal.show();
 		}
+
+
+		function extractKeys(obj) {
+			let flattenedObj = {};
+			for (let [key, value] of Object.entries(obj)) {
+				if (typeof value === "object") {
+					console.log("value:" + value);
+					flattenedObj = {...flattenedObj, ...extractKeys(value)};
+				} else {
+					flattenedObj[key] = value;
+				}
+			}
+			return flattenedObj;
+		}
+
+
+		function transform(data) {
+
+			//alert("data:"+ data);
+
+			Object.keys(data).forEach(function (item) {
+
+				if (typeof data[item] != "object") {
+					console.log(item + " : " + data[item]); // value
+				}
+				//if (typeof  data[item] === "object") {
+				//ransform(data[item]);
+				//} 
+				if (Array.isArray(data[item])) {
+					console.log(data[item].filter(kw => kw.name).map(c => c.name).join(", "));
+				}
+			});
+		}
+
+
 
 
 		function myObjIterFunctionzxcc(formData) {
